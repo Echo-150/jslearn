@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+     <title>Cart Quantity</title>
+</head>
+   
+
+    <button onclick="
+       console.log(`Cart Quantity : ${quantity}`);
+    ">show Quantity</button>  
+
+    <button onclick="
+        quantity++;
+        console.log(`Cart Quantity : ${quantity}`);
+    ">add to Cart</button>
+
+    <button onclick="
+        quantity += 2;
+        console.log(`Cart Quantity : ${quantity}`);
+    ">+2</button>
+
+    <button onclick="
+        quantity += 3;
+        console.log(`Cart Quantity : ${quantity}`);
+    ">+3</button>
+
+    <button onclick="
+        quantity = 0;
+        console.log(`Cart Quantity : ${quantity}`);
+    ">reset Cart</button>
+
+
+<body>
+
+    <script>
+        let quantity = 0;
+        // 对这个变量操作会报错
+        const price = 9.99; 
+        let bo=true;
+        
+        
+        console.log(2<4);
+    
+        console.log(typeof quantity);
+
+        //对于字符串和数字的比较
+        // == 会自动转换类型
+        // === 不会自动转换类型
+        console.log(5=='5.0');
+        console.log(5==='5.0');  
+
+        //if语句
+        if(price>10){
+            console.log('hello');
+        }
+        else{
+            console.log('world');
+        }
+
+        
+
+
+
+
+
+
+
+
+
+
+
+    
+    </script>
+
+</body>
+
+</html>
+
+
+
+
+
+
+

@@ -1,0 +1,105 @@
+ /* 统一按钮样式 */
+        .button-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: space-around;
+
+        }
+
+        button {
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+
+        }
+
+        .button-container1 {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .button-container2 {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+            /* 让按钮水平居中 */
+            align-items: center;
+            /* 垂直居中 */
+            width: 100%;
+            /* 占满父容器宽度，才能居中 */
+            max-width: 600px;
+            /* 最大宽度 */
+            margin: 40px 0 auto;
+            /* 让容器自己在页面居中 */
+        }
+
+        .button-container2 .btn,
+        .auto-play,
+        .stop
+        {
+
+            padding: 12px 28px;
+            /* 按钮内边距 = 控制按钮大小 */
+            font-size: 16px;
+            /* 文字大小 */
+            border: none;
+            border-radius: 6px;
+            /* 圆角（可选，更好看） */
+            background: #d3d6da;
+            color: rgb(20, 19, 19);
+            cursor: pointer;
+
+        }
+
+        .btn:hover {
+            background-color: #cccfd2;
+        }
+
+
+        body {
+            background-color: #0b0a0a;
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+
+        }
+
+        .title {
+            font-size: 36px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 40px;
+        }
+
+        .Rock,
+        .Paper,
+        .Scissors {
+            width: 50px;
+            height: 50px;
+        }
+
+        .button-container1 .btn00 {
+            background-color: transparent;
+            cursor: pointer;
+            border: 3px solid white;
+            border-radius: 50%;
+            padding: 30px;
+        }
+
+        .S1,
+        .S2 {
+            width: 50px;
+            height: 50px;
+            margin: 0 10px;
+        }
+        

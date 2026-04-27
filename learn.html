@@ -1,0 +1,442 @@
+<template>
+    <div class="qms-list-page">
+        <div id="searchBar">
+            <form id="criteriaForm">
+                <!-- 数据实体的名称 -->
+                <input class="form-control" type="hidden" name="criteria/_entity" :value="entityName" />
+                <input class="form-control" type="hidden" name="criteria/_orderby[1]/_property" value="shipNumber" />
+                <input class="form-control" type="hidden" name="criteria/_orderby[1]/_sort" value="asc" />
+                <input class="form-control" type="hidden" name="criteria/_orderby[2]/_property" value="detectionClass" />
+                <input class="form-control" type="hidden" name="criteria/_orderby[2]/_sort" value="asc" />
+                <input class="form-control" type="hidden" name="criteria/_orderby[3]/_property" value="sortIndex" />
+                <input class="form-control" type="hidden" name="criteria/_orderby[3]/_sort" value="asc" />
+                <!-- 搜索 + 按钮放在一行 -->
+                <div class="search-block">
+                    <div class="search-item" v-if="false">
+                        <vxe-text size="small">船号:</vxe-text>
+                        <vxe-table-select
+                            v-model="formData.shipNumber"
+                            placeholder="船号"
+                            size="mini"
+                            :columns="columnShipList"
+                            :options="shipNumberList"
+                            :popup-config="{ width: 200 }"
+                            :grid-config="gridShipConfig"
+                            multiple
+                            @change="conditionSearch"
+                        ></vxe-table-select>
+                        <input class="form-control" type="hidden" name="criteria/_expr[1]/shipNumber" :value="shipNumberTypes" />
+                        <input class="form-control" type="hidden" name="criteria/_expr[1]/_op" value="in" />
+                    </div>
+                    <div class="search-item">
+                        <vxe-text size="small">提票类型:</vxe-text>
+                        <vxe-input v-model="formData.detectionClass" placeholder="提票类型" size="mini" clearable></vxe-input>
+                        <input class="form-control" type="hidden" name="criteria/_expr[2]/detectionClass" :value="formData.detectionClass" />
+                        <input class="form-control" type="hidden" name="criteria/_expr[2]/_op" value="like" />
+                        <input class="form-control" type="hidden" name="criteria/_expr[2]/_likeRule" value="all" />
+                    </div>
+                    <!-- ? 查询按钮：放进 .search-block，并靠右 -->
+                    <div class="buttonGroup" style="margin-left: auto">
+                        <vxe-button content="查询" status="primary" size="mini" @click="conditionSearch"></vxe-button>
+                        <vxe-button content="重置" class="btnBlue2" size="mini" @click="reset"></vxe-button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div id="body">
+            <div id="tableFunctionBar">
+                <div class="buttonGroup padding-10" v-if="editConfig.enabled">
+                    <vxe-button content="新增" status="primary" size="mini" @click="add"></vxe-button>
+                    <vxe-button content="复制" status="primary" size="mini" @click="copy"></vxe-button>
+                    <vxe-button content="保存" status="primary" size="mini" @click="save"></vxe-button>
+                    <vxe-button content="删除" class="btnRed" status="error" size="mini" @click="remove"></vxe-button>
+                </div>
+                <div class="buttonGroup padding-10">
+                    <vxe-button content="审核" status="primary" size="mini" @click="lock(1)"></vxe-button>
+                    <vxe-button content="取消审核" class="btnRed" status="error" size="mini" @click="lock(0)"></vxe-button>
+                </div>
+                <div style="display: flex; flex-direction: row-reverse; flex: 1; padding-right: 10px">
+                    <vxe-toolbar custom ref="xToolbar" size="mini"></vxe-toolbar>
+                    <vxe-button
+                        mode="text"
+                        :content="editConfig.enabled ? '取消编辑' : '点击编辑'"
+                        :status="editConfig.enabled ? 'primary' : ''"
+                        :icon="editConfig.enabled ? 'vxe-icon-signature' : 'vxe-icon-lock'"
+                        size="mini"
+                        @click="lockEdit"
+                    ></vxe-button>
+                </div>
+            </div>
+            <div id="table" class="padding-0-10-0-10">
+                <vxe-table
+                    id="DsicReNdtCodeRuleList"
+                    :ref="tableRef"
+                    :data="tableData"
+                    size="mini"
+                    header-cell-class-name="headerVxeTable"
+                    height="100%"
+                    auto-resize
+                    show-overflow
+                    stripe
+                    keep-source
+                    :loading="loading"
+                    :edit-rules="validRules"
+                    :checkbox-config="checkboxConfig"
+                    :edit-config="editConfig"
+                    :column-config="{ resizable: true, drag: false }"
+                    :row-config="{ isHover: true, isCurrent: false, keyField: rowId }"
+                    :custom-config="customConfig"
+                    :resizable-config="{ isDblclickAutoWidth: true }"
+                    :virtual-y-config="{ enabled: true, gt: 50 }"
+                >
+                    <vxe-column type="seq" align="center" title="序号" width="60" min-width="60">
+                        <template #default="scope">
+                            <vxe-text :icon="Number(scope.row.lockStatus) === 1 ? 'vxe-icon-lock' : ''" :content="Number(scope.seq) + (pageNum - 1) * pageSize"></vxe-text>
+                        </template>
+                    </vxe-column>
+                    <vxe-column type="checkbox" align="center" width="40"></vxe-column>
+                    <vxe-column field="id" title="主键" width="80" header-align="center" align="left" :visible="false"></vxe-column>
+                    <vxe-column field="detectionClass" title="提票类型" width="150" header-align="center" align="left" :edit-render="{ autofocus: true }">
+                        <template #edit="scope">
+                            <vxe-input v-model="scope.row.detectionClass" clearable></vxe-input>
+                        </template>
+                    </vxe-column>
+                    <vxe-column field="addtionWho" title="二级类型" width="150" header-align="center" align="left" :edit-render="{ autofocus: true }">
+                        <template #edit="scope">
+                            <vxe-input v-model="scope.row.addtionWho" clearable></vxe-input>
+                        </template>
+                    </vxe-column>
+                    <vxe-column field="ruleCode" title="规则代码" width="150" header-align="center" align="left" :edit-render="{ autofocus: true }">
+                        <template #edit="scope">
+                            <vxe-input v-model="scope.row.ruleCode" clearable></vxe-input>
+                        </template>
+                    </vxe-column>
+                    <vxe-column field="needStage" title="需要阶段" header-align="center" align="center" width="120" :edit-render="{ autofocus: true }">
+                        <template #default="{ row }">
+                            <vxe-checkbox v-model="row.needStage" class="checkboxReadOnly" :checked-value="1" :unchecked-value="0" :disabled="Number(row.lockStatus) === 1 ? true : !editConfig.enabled"></vxe-checkbox>
+                        </template>
+                        <template #edit="{ row }">
+                            <vxe-checkbox v-model="row.needStage" :checked-value="1" :unchecked-value="0"></vxe-checkbox>
+                        </template>
+                    </vxe-column>
+                    <vxe-column field="tobeIgnore" title="忽略代码" header-align="center" align="center" width="120" :edit-render="{ autofocus: true }">
+                        <template #default="{ row }">
+                            <vxe-checkbox v-model="row.tobeIgnore" class="checkboxReadOnly" :checked-value="1" :unchecked-value="0" :disabled="Number(row.lockStatus) === 1 ? true : !editConfig.enabled"></vxe-checkbox>
+                        </template>
+                        <template #edit="{ row }">
+                            <vxe-checkbox v-model="row.tobeIgnore" :checked-value="1" :unchecked-value="0"></vxe-checkbox>
+                        </template>
+                    </vxe-column>
+                    <vxe-column field="tobeSuffix" title="后缀" header-align="center" align="center" width="120" :edit-render="{ autofocus: true }">
+                        <template #default="{ row }">
+                            <vxe-checkbox v-model="row.tobeSuffix" class="checkboxReadOnly" :checked-value="1" :unchecked-value="0" :disabled="Number(row.lockStatus) === 1 ? true : !editConfig.enabled"></vxe-checkbox>
+                        </template>
+                        <template #edit="{ row }">
+                            <vxe-checkbox v-model="row.tobeSuffix" :checked-value="1" :unchecked-value="0"></vxe-checkbox>
+                        </template>
+                    </vxe-column>
+                    <vxe-column field="tobeCustomize" title="自定义" header-align="center" align="center" width="120" :edit-render="{ autofocus: true }">
+                        <template #default="{ row }">
+                            <vxe-checkbox v-model="row.tobeCustomize" class="checkboxReadOnly" :checked-value="1" :unchecked-value="0" :disabled="Number(row.lockStatus) === 1 ? true : !editConfig.enabled"></vxe-checkbox>
+                        </template>
+                        <template #edit="{ row }">
+                            <vxe-checkbox v-model="row.tobeCustomize" :checked-value="1" :unchecked-value="0"></vxe-checkbox>
+                        </template>
+                    </vxe-column>
+                    <vxe-column field="tobeFillself" title="自填" header-align="center" align="center" width="120" :edit-render="{ autofocus: true }">
+                        <template #default="{ row }">
+                            <vxe-checkbox v-model="row.tobeFillself" class="checkboxReadOnly" :checked-value="1" :unchecked-value="0" :disabled="Number(row.lockStatus) === 1 ? true : !editConfig.enabled"></vxe-checkbox>
+                        </template>
+                        <template #edit="{ row }">
+                            <vxe-checkbox v-model="row.tobeFillself" :checked-value="1" :unchecked-value="0"></vxe-checkbox>
+                        </template>
+                    </vxe-column>
+                    <vxe-column field="sortIndex" title="排序" width="150" header-align="center" align="left" :edit-render="{ autofocus: true }">
+                        <template #edit="scope">
+                            <vxe-number-input v-model="scope.row.sortIndex" placeholder="排序" size="mini" type="integer" clearable></vxe-number-input>
+                        </template>
+                    </vxe-column>
+                    <!--
+						<vxe-column field="shipNumber" title="船号" width="150" header-align="center" align="left" :edit-render="{autofocus: true}">
+							<template #edit="scope">
+								<vxe-select v-model="scope.row.shipNumber" :options="shipNumberList" clearable></vxe-select>
+							</template>
+						</vxe-column>
+						-->
+                    <vxe-column field="createPeopleId" title="操作人员职号" width="120" header-align="center" align="left" :visible="false"></vxe-column>
+                    <vxe-column field="createPeople" title="操作人员" width="100" header-align="center" align="left" :visible="false"></vxe-column>
+                    <vxe-column field="createTime" title="操作时间" width="200" header-align="center" align="center" :visible="false">
+                        <template #default="{ row }">
+                            <span>{{ formatDate(row.createTime, 'yyyy-MM-dd HH:mm:ss') }}</span>
+                        </template>
+                    </vxe-column>
+                </vxe-table>
+            </div>
+            <div id="tablePager">
+                <vxe-pager
+                    size="mini"
+                    :page-sizes="pageSizeList"
+                    v-model:current-page="pageNum"
+                    v-model:page-size="pageSize"
+                    :total="total"
+                    :layouts="['Home', 'PrevJump', 'PrevPage', 'Number', 'NextPage', 'NextJump', 'End', 'Sizes', 'FullJump', 'Total']"
+                    @page-change="pageChange"
+                ></vxe-pager>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+    import axios from 'axios';
+    import VxeUI from 'vxe-pc-ui';
+    import cacheStorage from '@/shared/utils/storage';
+    import { getUuid, getCurrentTime, messageVxeUI, isBlankStr, eosSearch, formatDate, getFormData } from '@/shared/utils/common';
+    import { getUserInfo } from '@/shared/utils/eosJsp';
+    import { findIndexFast, getIntersectionAndDifference } from '@/shared/utils/ArrayRes';
+    import { loadShipNumber } from '@/pages/qms/reNdt/js/reNdt';
+    export default {
+        name: 'qms-reNdt-dataBase-codeRule',
+        data() {
+            return {
+                // 不可改动
+                rowId: 'id',
+                tableRef: 'xTable',
+                // 必须字段
+                tableName: 'DSIC_RE_NDT_CODE_RULE',
+                entityName: 'com.dsic.qms.reNdt.resource.DsicReNdtCodeRule',
+                originalForm: {},
+                pageSizeList: [10, 20, 50, 100, 200],
+                // 自定义
+                formData: { shipNumber: [], detectionClass: '' },
+                tableData: [],
+                loading: false,
+                pageNum: 1,
+                pageSize: 50,
+                total: 0,
+                validRules: {
+                    detectionClass: [{ required: true, message: '必填项!' }],
+                    ruleCode: [{ required: true, message: '必填项!' }]
+                },
+                gridShipConfig: { checkboxConfig: { trigger: 'row' } },
+                columnShipList: [{ field: 'label', title: '船号' }],
+                shipNumberList: [],
+                customConfig: {
+                    enabled: true,
+                    immediate: true,
+                    storage: { visible: true, resizable: true, sort: true, fixed: true },
+                    updateStore(option) {
+                        cacheStorage.setItem(option.id, option.storeData || {});
+                    },
+                    async restoreStore(option) {
+                        return await cacheStorage.getItem(option.id, option.storeData);
+                    }
+                },
+                editConfig: { trigger: 'click', mode: 'row', showStatus: true, enabled: false },
+                checkboxConfig: { trigger: 'row', highlight: true, reserve: true },
+                userInfo: {},
+                currentTimeWeak: ''
+            };
+        },
+        async created() {
+            loadShipNumber(this);
+            this.userInfo = await getUserInfo();
+            this.editConfig.beforeEditMethod = (option) => {
+                const row = option.row;
+                const createPeopleId = row.createPeopleId;
+                if (row.lockStatus === 1) return false;
+                return isBlankStr(createPeopleId) || createPeopleId === this.userInfo.userCode;
+            };
+            this.checkboxConfig.checkMethod = (option) => {
+                const row = option.row;
+                const createPeopleId = row.createPeopleId;
+                if (row.lockStatus === 1) return row.lockPeople === this.userInfo.userName;
+                return isBlankStr(createPeopleId) || createPeopleId === this.userInfo.userCode;
+            };
+            this.currentTimeWeak = await getCurrentTime();
+        },
+        mounted() {
+            this.originalForm = deepClone(this.formData);
+            this.conditionSearch();
+            this.$nextTick(() => {
+                this.$refs[this.tableRef].connect(this.$refs.xToolbar);
+            });
+        },
+        computed: {
+            shipNumberTypes() {
+                return this.formData.shipNumber === null || this.formData.shipNumber.length === 0 ? '' : this.formData.shipNumber.join(',');
+            }
+        },
+        methods: {
+            lockEdit() {
+                const enabled = this.editConfig.enabled;
+                this.editConfig.enabled = !enabled;
+                if (enabled) this.search();
+            },
+            async lock(value) {
+                const xTable = this.$refs[this.tableRef];
+                const selectRow = xTable.getCheckboxRecords();
+                if (selectRow.length <= 0) return messageVxeUI({ status: 'error', content: '至少选中一条记录！' });
+                const rowIds = [];
+                for (const item of selectRow) {
+                    if (item.lockPeople && item.lockPeople !== this.userInfo.userName) return messageVxeUI({ status: 'error', content: '存在锁定人员非当前操作人员的记录！' });
+                    rowIds.push(item.id);
+                }
+                const { data: text } = await axios.post('commonController.commonBiz.lockData.biz.ext', {
+                    lockStatus: value,
+                    lockPeople: this.userInfo.userName,
+                    rowIds,
+                    datebaseName: this.tableName
+                });
+                if (text.exception != null) return messageVxeUI({ status: 'error', content: text.exception });
+                this.search();
+            },
+            add() {
+                const newRow = { id: getUuid() };
+                this.$refs[this.tableRef].insert(newRow);
+            },
+            copy() {
+                const xTable = this.$refs[this.tableRef];
+                const selectRows = xTable.getCheckboxRecords();
+                if (selectRows.length === 0) return messageVxeUI({ status: 'error', content: '至少选择一条数据！' });
+                const copyRows = deepClone(selectRows);
+                copyRows.forEach((item) => (item.id = getUuid()));
+                copyRows.forEach((row) => xTable.insert(row));
+            },
+            async save() {
+                if (this.loading) return;
+                this.loading = true;
+                const xTable = this.$refs[this.tableRef];
+                const valid = await xTable.validate();
+                if (valid) {
+                    this.loading = false;
+                    return messageVxeUI({ status: 'error', content: '请检查问题数据！' });
+                }
+                const date = this.currentTimeWeak.replace('T', ' ');
+                let insertRow = xTable.getInsertRecords();
+                let updateRow = xTable.getUpdateRecords();
+                if (insertRow.length === 0 && updateRow.length === 0) {
+                    this.loading = false;
+                    return messageVxeUI({ status: 'warning', content: '数据未发生更改，无需保存！' });
+                }
+                const arrOption = [];
+                if (insertRow.length !== 0) {
+                    insertRow = insertRow.map((item) => ({
+                        ...deepClone(item),
+                        createPeopleId: this.userInfo.userCode,
+                        createPeople: this.userInfo.userName,
+                        createTime: date
+                    }));
+                    arrOption.push({ rows: insertRow, url: 'com.dsic.qms.reNdt.dsicrendtcoderulebiz.addDsicReNdtCodeRules.biz.ext' });
+                }
+                if (updateRow.length !== 0) {
+                    updateRow = updateRow.map((item) => ({
+                        ...deepClone(item),
+                        createPeopleId: this.userInfo.userCode,
+                        createPeople: this.userInfo.userName,
+                        createTime: date
+                    }));
+                    arrOption.push({ rows: updateRow, url: 'com.dsic.qms.reNdt.dsicrendtcoderulebiz.updateDsicReNdtCodeRules.biz.ext' });
+                }
+                try {
+                    const results = await Promise.all(arrOption.map((item) => axios.post(item.url, { dsicrendtcoderules: item.rows })));
+                    const hasError = results.some((res) => res.data.exception != null);
+                    if (!hasError) {
+                        messageVxeUI({ status: 'success', content: '保存成功！' });
+                        this.search();
+                    } else messageVxeUI({ status: 'error', content: '保存失败！' });
+                } finally {
+                    this.loading = false;
+                }
+            },
+            async remove() {
+                const xTable = this.$refs[this.tableRef];
+                const selectRow = xTable.getCheckboxRecords();
+                if (selectRow.length === 0) return messageVxeUI({ status: 'error', content: '至少选择一条数据！' });
+                const tableData = xTable.getTableData().tableData;
+                const uids = tableData.map((row) => row[this.rowId]);
+                // 已锁定校验
+                const lockRow = selectRow.filter((item) => Number(item.lockStatus) === 1);
+                if (lockRow.length > 0) {
+                    const indexs = lockRow.map((item) => {
+                        const uid = item[this.rowId];
+                        return Number(findIndexFast(uids, uid)) + 1;
+                    });
+                    return messageVxeUI({ status: 'error', content: `第${indexs.join('、')}行记录,存在已锁定的数据,不可删除！` });
+                }
+                // 操作人校验
+                const otherOperators = selectRow.filter((item) => !isBlankStr(item.createPeopleId) && item.createPeopleId !== this.userInfo.userCode);
+                if (otherOperators.length > 0) {
+                    const indexs = otherOperators.map((item) => {
+                        const uid = item[this.rowId];
+                        return Number(findIndexFast(uids, uid)) + 1;
+                    });
+                    return messageVxeUI({ status: 'error', content: `第${indexs.join('、')}行记录,操作人员非当前用户,禁止删除!` });
+                }
+                const insertRow = xTable.getInsertRecords();
+                const calculateData = getIntersectionAndDifference(selectRow, insertRow, this.rowId);
+                if (calculateData.difference.length === 0) {
+                    xTable.remove(selectRow);
+                    return;
+                }
+                const action = await VxeUI.modal.confirm('确定删除选中记录？', '系统提示');
+                if (action !== 'confirm') return;
+                const actualDeletions = selectRow.filter((item) => !isBlankStr(item.id));
+                const { data: text } = await axios.post('com.dsic.qms.reNdt.dsicrendtcoderulebiz.deleteDsicReNdtCodeRules.biz.ext', { dsicrendtcoderules: actualDeletions });
+                if (text.exception == null) {
+                    messageVxeUI({ status: 'success', content: '删除成功！' });
+                    xTable.remove(selectRow);
+                } else messageVxeUI({ status: 'error', content: '删除失败！' });
+            },
+            async search() {
+                await this.$nextTick();
+                this.loading = true;
+                try {
+                    const res = await eosSearch(getFormData(), this.pageNum, this.pageSize, 'com.dsic.qms.reNdt.dsicrendtcoderulebiz.queryDsicReNdtCodeRules.biz.ext');
+                    this.tableData = res.dsicrendtcoderules || [];
+                    this.total = res.total;
+                } finally {
+                    this.loading = false;
+                }
+            },
+            reset() {
+                this.formData = deepClone(this.originalForm);
+                this.search();
+            },
+            clearData() {
+                this.tableData = [];
+                this.pageNum = 1;
+                this.pageSize = 50;
+                this.total = 0;
+            },
+            conditionSearch() {
+                this.clearData();
+                this.search();
+            },
+            pageChange({ pageSize, currentPage }) {
+                this.pageNum = currentPage;
+                this.pageSize = pageSize;
+                this.search();
+            },
+            formatDate
+        }
+    };
+</script>
+
+<style scoped>
+    @import '@/shared/css/qms-list-common.css';
+
+    /* 让 scoped 穿透到 vxe 内部 */
+    .qms-list-page :deep(.checkboxReadOnly.vxe-checkbox) {
+        font-size: 1.3em !important;
+    }
+    .qms-list-page :deep(.checkboxReadOnly.vxe-checkbox.is--disabled) {
+        color: #02666a !important;
+    }
+    .qms-list-page :deep(.checkboxReadOnly.vxe-checkbox.is--disabled .vxe-checkbox--icon) {
+        color: #02666a !important;
+    }
+    .qms-list-page :deep(.checkboxReadOnly .vxe-icon-checkbox-unchecked-fill:before) {
+        content: '\e727' !important;
+    }
+</style>

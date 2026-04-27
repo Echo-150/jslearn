@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>filter筛选数组</title>
+</head>
+<body>
+    <script>
+        // 1. 创建数字数组
+        let arr = [5, 12, 8, 20, 15, 3, 18];
+
+        // 2. 使用 filter 筛选大于10的元素
+        let newArr = arr.filter(function(item) {
+            return item > 10;
+        });
+
+        // 输出结果
+        console.log("原数组：", arr);
+        console.log("大于10的数字：", newArr);
+    </script>
+</body>
+</html>

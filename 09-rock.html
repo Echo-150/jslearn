@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>number calculator</title>
+
+
+
+</head>
+
+<body>
+    <p>
+        calculate
+    </p>
+
+
+
+    <input id="num1" placeholder="每月工资" onkeydown="
+    console.log('you click')
+    if(event.key==='Enter'){
+        play();
+    }
+    ">
+    </input>
+
+    <button title="rock" class="btn" onclick="
+       play();
+    " >calculate</button>
+
+    <p class="result">
+    </p>
+
+    <script>
+        window.console.log("hello world");
+        window.alert("hello world");
+
+
+
+        function play() {
+
+
+            
+            if(isNaN(Number(document.getElementById("num1").value))){
+                document.querySelector(".result").innerHTML = "请输入数字！！！";
+                return;
+             }
+
+
+            if(document.getElementById("num1").value<5000){
+                document.querySelector(".result").innerHTML = "需要交税款为：" +'￥'+document.getElementById("num1").value /10;
+            }
+
+            else{
+                document.querySelector(".result").innerHTML = "需要交税款为：" +'￥'+document.getElementById("num1").value /2;
+            }
+        }
+
+
+
+
+    </script>
+</body>
+
+</html>

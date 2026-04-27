@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>网页一对一视频聊天</title>
+<style>
+*{box-sizing:border-box;font-family:system-ui;margin:0;padding:0}
+body{padding:30px;background:#1a1a1a;color:#fff;text-align:center}
+.box{max-width:1000px;margin:0 auto}
+.videos{display:flex;gap:20px;margin:20px 0}
+video{width:48%;border-radius:10px;background:#000;border:2px solid #444}
+input{width:100%;padding:12px;margin:10px 0;border-radius:6px;border:none}
+button{padding:12px 24px;margin:5px;background:#2563eb;color:white;border:none;border-radius:6px;cursor:pointer}
+.tip{color:#ccc;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="box">
+<h2>一对一网页视频通话（WebRTC）</h2>
+
+<div class="videos">
+<!-- 自己画面 -->
+<video id="localVideo" autoplay muted playsinline></video>
+<!-- 对方画面 -->
+<video id="remoteVideo" autoplay playsinline></video>
+</div>
+
+<button onclick="startCall()">创建房间（发起通话）</button>
+<button onclick="joinCall()">加入通话</button>
+<br>
+<input type="text" id="offerInput" placeholder="发起方复制这里的连接发给对方">
+<input type="text" id="answerInput" placeholder="对方复制回复连接发给发起方">
+
+<div class="tip">
+步骤：1.发起人点创建→复制offer发给对方<br>
+2.对方粘贴offer→点加入→复制answer发回发起人<br>
+3.发起人粘贴answer→自动连通视频通话
+</div>
+</div>
+
+<script>
+const localVideo = document.getElementById('localVideo');
+const remoteVideo = document.getElementById('remoteVideo');
+const offerInput = document.getElementById('offerInput');
+const answerInput = document.getElementById('answerInput');
+
+const peer = new RTCPeerConnection({
+    iceServers:[{urls:'stun:stun.l.google.com:19302'}]
+});
+
+let localStream;
+
+// 获取自己摄像头
+async function getUserMedia(){
+    localStream = await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+    localVideo.srcObject = localStream;
+    localStream.getTracks().forEach(track=>peer.addTrack(track,localStream));
+}
+
+// 接收对方视频
+peer.ontrack = e=>{remoteVideo.srcObject = e.streams[0];};
+
+// ICE候选
+peer.onicecandidate = e=>{
+    if(e.candidate) return;
+    if(peer.localDescription.type==='offer') offerInput.value = btoa(JSON.stringify(peer.localDescription));
+    if(peer.localDescription.type==='answer') answerInput.value = btoa(JSON.stringify(peer.localDescription));
+};
+
+// 发起人创建通话
+async function startCall(){
+    await getUserMedia();
+    const offer = await peer.createOffer();
+    await peer.setLocalDescription(offer);
+}
+
+// 对方加入通话
+async function joinCall(){
+    await getUserMedia();
+    const offer = JSON.parse(atob(offerInput.value));
+    await peer.setRemoteDescription(offer);
+    const answer = await peer.createAnswer();
+    await peer.setLocalDescription(answer);
+}
+
+// 发起人粘贴answer连接
+answerInput.onchange = async ()=>{
+    const answer = JSON.parse(atob(answerInput.value));
+    await peer.setRemoteDescription(answer);
+};
+</script>
+</body>
+</html>

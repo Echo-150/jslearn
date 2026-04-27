@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>DOM Project</title>
+
+
+    <style>
+        .btn1 {
+            background-color: #0d0e0d;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            font-size: 16px;
+            margin: 4px 2px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+
+
+
+        }
+        .clicked {
+            border: none;
+            background-color: #696a69;
+        }
+        .Input{
+            font-size: 15px;
+           
+            padding: 10px;
+            border-radius: 5px;
+
+        }
+        .btn2{
+            background-color: green;
+            border: none;
+            color: white;
+            padding: 12px 15px;
+            text-align: center;
+            font-size: 15px;
+            margin: 4px 2px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+
+        }
+    </style>
+</head>
+
+
+
+<body>
+    <p>
+       百度点击按钮跳转百度
+    </p>
+
+    <button  onclick="
+    play1();
+    "  class = "btn1">
+        click me
+    </button>
+
+    <p>
+        calculate
+    </p>
+
+    <input id="num1" placeholder="每月工资" class="Input"  onkeydown="
+    console.log('you click')
+    if(event.key==='Enter'){
+        play();
+    }
+    ">
+    </input>
+
+    <button title="rock" class="btn2" onclick="
+       play();
+    " >calculate</button>
+
+    <p class="result">
+    </p>
+
+    <script>
+    
+
+    function play1() {
+        const buttonelement = document.querySelector(".btn1");
+        if(buttonelement.innerHTML==="click me"){
+            buttonelement.innerHTML="clicked";
+            buttonelement.classList.add("clicked");
+            console.log("you clicked the button");
+            window.open("https://www.baidu.com", "_blank");
+               }
+        else{
+            buttonelement.classList.remove("clicked");
+            buttonelement.innerHTML="click me";
+        }
+    }
+
+
+        function play() {
+            if(isNaN(Number(document.getElementById("num1").value))){
+                document.querySelector(".result").innerHTML = "请输入数字！！！";
+                return;
+             }
+
+
+            if(document.getElementById("num1").value<5000){
+                document.querySelector(".result").innerHTML = "需要交税款为：" +'￥'+document.getElementById("num1").value /10;
+            }
+
+            else{
+                document.querySelector(".result").innerHTML = "需要交税款为：" +'￥'+document.getElementById("num1").value /2;
+            }
+        }
+
+
+
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生信息列表 - 学生信息管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        
+        /* 顶部导航栏 */
+        .navbar {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .navbar .user-info span {
+            font-weight: bold;
+        }
+        
+        .navbar .logout-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .navbar .logout-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        /* 主容器 */
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        
+        /* 搜索和添加区域 */
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .search-box input {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 300px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+        
+        .search-box button {
+            background-color: #f5576c;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .search-box button:hover {
+            background-color: #e44a5f;
+        }
+        
+        .add-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .add-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
+        }
+        
+        /* 表格样式 */
+        .student-table {
+            width: 100%;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        table th, table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            color: #555;
+            position: relative;
+        }
+        
+        table th::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        
+        table th:hover::after {
+            transform: scaleX(1);
+        }
+        
+        table tr {
+            transition: background-color 0.3s ease;
+        }
+        
+        table tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        /* 操作按钮 */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .edit-btn, .delete-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .edit-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .edit-btn:hover {
+            background-color: #45a049;
+            transform: translateY(-1px);
+        }
+        
+        .delete-btn {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        .delete-btn:hover {
+            background-color: #da190b;
+            transform: translateY(-1px);
+        }
+        
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .modal-header h2 {
+            color: #333;
+            font-size: 20px;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+            transition: color 0.3s ease;
+        }
+        
+        .close-btn:hover {
+            color: #333;
+        }
+        
+        /* 表单样式 */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+        
+        .form-group .error {
+            color: #f44336;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .form-group.error input,
+        .form-group.error select {
+            border-color: #f44336;
+        }
+        
+        .form-group.error .error {
+            display: block;
+        }
+        
+        /* 模态框按钮 */
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #f0f0f0;
+        }
+        
+        .cancel-btn,
+        .confirm-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .cancel-btn {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        
+        .cancel-btn:hover {
+            background-color: #e0e0e0;
+            transform: translateY(-1px);
+        }
+        
+        .confirm-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        .confirm-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
+        }
+        
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .header-actions {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 15px;
+            }
+            
+            .search-box {
+                justify-content: center;
+            }
+            
+            .add-btn {
+                width: 100%;
+                text-align: center;
+            }
+            
+            table {
+                font-size: 14px;
+            }
+            
+            table th, table td {
+                padding: 10px;
+            }
+            
+            .modal-content {
+                margin: 10% auto;
+                padding: 20px;
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <nav class="navbar">
+        <div class="user-info">
+            <span id="welcomeMessage">欢迎，管理员</span>
+            <button class="logout-btn" onclick="Auth.logout()">退出</button>
+        </div>
+    </nav>
+    
+    <!-- 主容器 -->
+    <div class="container">
+        <!-- 搜索和添加区域 -->
+        <div class="header-actions">
+            <div class="search-box">
+                <input type="text" placeholder="请输入学生姓名或学号进行搜索">
+                <button>搜索</button>
+            </div>
+            <button class="add-btn" onclick="openModal('add')">添加学生</button>
+        </div>
+        
+        <!-- 学生信息表格 -->
+        <div class="student-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>学号</th>
+                        <th>姓名</th>
+                        <th>班级</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>2023001</td>
+                        <td>张三</td>
+                        <td>计算机科学与技术1班</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="edit-btn" onclick="openModal('edit', {id: '2023001', name: '张三', gender: '男', class: '计算机科学与技术1班', contact: '13800138001'})">编辑</button>
+                                <button class="delete-btn">删除</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2023002</td>
+                        <td>李四</td>
+                        <td>软件工程2班</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="edit-btn" onclick="openModal('edit', {id: '2023002', name: '李四', gender: '女', class: '软件工程2班', contact: '13900139002'})">编辑</button>
+                                <button class="delete-btn">删除</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2023003</td>
+                        <td>王五</td>
+                        <td>数据科学与大数据技术1班</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="edit-btn" onclick="openModal('edit', {id: '2023003', name: '王五', gender: '男', class: '数据科学与大数据技术1班', contact: '13700137003'})">编辑</button>
+                                <button class="delete-btn">删除</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2023004</td>
+                        <td>赵六</td>
+                        <td>人工智能3班</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="edit-btn" onclick="openModal('edit', {id: '2023004', name: '赵六', gender: '女', class: '人工智能3班', contact: '13600136004'})">编辑</button>
+                                <button class="delete-btn">删除</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2023005</td>
+                        <td>钱七</td>
+                        <td>网络工程1班</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="edit-btn" onclick="openModal('edit', {id: '2023005', name: '钱七', gender: '男', class: '网络工程1班', contact: '13500135005'})">编辑</button>
+                                <button class="delete-btn">删除</button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- 添加/编辑学生信息模态框 -->
+    <div id="studentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">添加学生信息</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="studentForm">
+                <div class="form-group">
+                    <label for="studentId">学号</label>
+                    <input type="text" id="studentId" name="studentId" placeholder="请输入学号">
+                    <div class="error">请输入有效的学号</div>
+                </div>
+                <div class="form-group">
+                    <label for="studentName">姓名</label>
+                    <input type="text" id="studentName" name="studentName" placeholder="请输入姓名">
+                    <div class="error">请输入姓名</div>
+                </div>
+                <div class="form-group">
+                    <label for="studentGender">性别</label>
+                    <select id="studentGender" name="studentGender">
+                        <option value="">请选择性别</option>
+                        <option value="男">男</option>
+                        <option value="女">女</option>
+                    </select>
+                    <div class="error">请选择性别</div>
+                </div>
+                <div class="form-group">
+                    <label for="studentClass">班级</label>
+                    <input type="text" id="studentClass" name="studentClass" placeholder="请输入班级">
+                    <div class="error">请输入班级</div>
+                </div>
+                <div class="form-group">
+                    <label for="studentContact">联系方式</label>
+                    <input type="text" id="studentContact" name="studentContact" placeholder="请输入联系方式">
+                    <div class="error">请输入有效的联系方式</div>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="cancel-btn" onclick="closeModal()">取消</button>
+                    <button type="button" class="confirm-btn" onclick="saveStudent()">确定</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="./js/auth.js"></script>
+    <script>
+        // 页面加载时检查登录状态
+        window.onload = function() {
+            // 检查用户是否已登录
+            if (!Auth.isLoggedIn()) {
+                Auth.redirectToLogin();
+                return;
+            }
+            
+            // 显示当前用户信息
+            const currentUser = Auth.getCurrentUser();
+            const welcomeMessage = document.getElementById('welcomeMessage');
+            if (currentUser) {
+                welcomeMessage.textContent = `欢迎，${currentUser.username} (${currentUser.role === 'admin' ? '管理员' : '普通用户'})`;
+            }
+        };
+        
+        // 打开模态框
+        function openModal(type, data = {}) {
+            const modal = document.getElementById('studentModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const studentId = document.getElementById('studentId');
+            const studentName = document.getElementById('studentName');
+            const studentGender = document.getElementById('studentGender');
+            const studentClass = document.getElementById('studentClass');
+            const studentContact = document.getElementById('studentContact');
+            
+            // 设置模态框标题
+            if (type === 'add') {
+                modalTitle.textContent = '添加学生信息';
+                // 清空表单
+                studentId.value = '';
+                studentName.value = '';
+                studentGender.value = '';
+                studentClass.value = '';
+                studentContact.value = '';
+                // 启用学号输入
+                studentId.disabled = false;
+            } else if (type === 'edit') {
+                modalTitle.textContent = '编辑学生信息';
+                // 填充表单数据
+                studentId.value = data.id || '';
+                studentName.value = data.name || '';
+                studentGender.value = data.gender || '';
+                studentClass.value = data.class || '';
+                studentContact.value = data.contact || '';
+                // 禁用学号输入
+                studentId.disabled = true;
+            }
+            
+            // 显示模态框
+            modal.style.display = 'block';
+        }
+        
+        // 关闭模态框
+        function closeModal() {
+            const modal = document.getElementById('studentModal');
+            modal.style.display = 'none';
+            // 重置表单验证状态
+            resetFormValidation();
+        }
+        
+        // 重置表单验证状态
+        function resetFormValidation() {
+            const formGroups = document.querySelectorAll('.form-group');
+            formGroups.forEach(group => {
+                group.classList.remove('error');
+            });
+        }
+        
+        // 表单验证
+        function validateForm() {
+            let isValid = true;
+            resetFormValidation();
+            
+            // 验证学号
+            const studentId = document.getElementById('studentId');
+            if (!studentId.value.trim()) {
+                studentId.parentElement.classList.add('error');
+                isValid = false;
+            }
+            
+            // 验证姓名
+            const studentName = document.getElementById('studentName');
+            if (!studentName.value.trim()) {
+                studentName.parentElement.classList.add('error');
+                isValid = false;
+            }
+            
+            // 验证性别
+            const studentGender = document.getElementById('studentGender');
+            if (!studentGender.value) {
+                studentGender.parentElement.classList.add('error');
+                isValid = false;
+            }
+            
+            // 验证班级
+            const studentClass = document.getElementById('studentClass');
+            if (!studentClass.value.trim()) {
+                studentClass.parentElement.classList.add('error');
+                isValid = false;
+            }
+            
+            // 验证联系方式
+            const studentContact = document.getElementById('studentContact');
+            if (!studentContact.value.trim()) {
+                studentContact.parentElement.classList.add('error');
+                isValid = false;
+            }
+            
+            return isValid;
+        }
+        
+        // 保存学生信息
+        function saveStudent() {
+            if (validateForm()) {
+                // 这里可以添加保存逻辑
+                alert('保存成功！');
+                closeModal();
+            }
+        }
+        
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            const modal = document.getElementById('studentModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>

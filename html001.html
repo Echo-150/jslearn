@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>HTML5语义化布局</title>
+    <style>
+        /* 简单样式，区分模块，便于查看效果 */
+        header,nav,section,article,footer{
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+        }
+        header{background: #f0f8ff;}
+        nav{background: #f5f5f5;}
+        section{background: #fefefe;}
+        article{background: #fffaf0;}
+        footer{background: #f0f0f0;}
+    </style>
+</head>
+<body>
+
+    <!-- 1. header：网页头部区域 -->
+    <header>
+        <h2>网站头部 Header</h2>
+        <p>网站Logo、标题、简介等内容</p>
+    </header>
+
+    <!-- 2. nav：导航栏区域 -->
+    <nav>
+        <h4>导航栏 Nav</h4>
+        <a href="#">首页</a> |
+        <a href="#">资讯</a> |
+        <a href="#">关于我们</a>
+    </nav>
+
+    <!-- 3. section：独立区块/内容板块 -->
+    <section>
+        <h3>内容板块 Section</h3>
+        <p>用于划分网页独立的内容区域</p>
+
+        <!-- 4. article：独立完整文章/内容块 -->
+        <article>
+            <h4>文章内容 Article</h4>
+            <p>article 代表独立、完整、可单独复用的内容，如新闻、博客文章。</p>
+        </article>
+    </section>
+
+    <!-- 5. footer：网页底部区域 -->
+    <footer>
+        <p>网站底部 Footer | 版权所有 © 2025</p>
+    </footer>
+
+</body>
+</html>

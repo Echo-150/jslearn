@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>rock,paper,scissors</title>
+    <link rel="stylesheet" href="./styles/11-rock.css">
+    <style >
+    </style>
+
+</head>
+
+<body>
+
+    <p class="title">
+        Rock,Paper,Scissors
+    </p>
+
+
+
+    <div class="button-container1">
+
+
+        <button title="rock" onclick="
+            play('rock');
+            " class="btn00 active1" >
+            <img src="./image/ro.png" class="Rock"></button>
+
+        <button title="paper" onclick="
+        play('paper');
+    " class="btn00 active2">
+            <img src="./image/pa.png" class="Paper"></button>
+
+        <button title="scissors" onclick="
+       play('scissors');
+    " class="btn00 active3"><img src="./image/sc.png" class="Scissors"></button>
+
+    </div>
+
+
+
+
+
+    <p class="result"></p>
+    <p class="result1">
+        You
+        <img src="./image/ro.png" class="S1"></i>
+        <img src="./image/ro.png" class="S2"></i>
+        Computer
+    </p>
+    <p class="result2"></p>
+    <p class="result3"></p>
+
+
+    
+
+
+<div class="button-container2">
+            <button title="reset" class="btn" onclick="
+       score.wins=0;
+       score.losses=0;
+       score.ties=0;
+       alert(`Current Score:win: ${score.wins}-lose: ${score.losses}-tie: ${score.ties}`);
+    ">reset</button>
+    <button class="auto-play" onclick="
+        auto = true;
+         autoPlay();">
+        auto play
+    </button>
+    <button class="stop" hidden="true" onclick="
+        auto = false;
+        document.querySelector('.stop').hidden = true;
+        ">
+        stop
+    </button>
+    
+</div>
+
+
+  
+
+
+    <script src="./scripts/11-rock.js"></script>
+</body>
+
+</html>

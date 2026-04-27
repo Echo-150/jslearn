@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo List</title>
+     <link rel="stylesheet" href="./styles/13-todo-list.css"></link>
+
+
+
+</head>
+
+    <p class="title">
+        Todo List
+    </p>
+    <input placeholder="Todo name" class="input"  onkeydown="
+    if(event.key==='Enter'){
+        addTodo();
+    }"
+>
+    <button class="btn2" onclick="
+     addTodo();
+    ">Add</button>
+   
+    
+    <ul class="todo-list"></ul>
+    
+
+    <script src="./scripts/12-todo-list.js"></script>
+
+    </script>
+</body>
+</html>

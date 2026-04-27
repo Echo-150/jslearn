@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<hea>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <titl>Document</title>
+</head>
+<body>
+    
+
+    <button class="btn">click</button>
+
+
+    <script> 
+
+    const btn = document.querySelector('.btn');
+    btn.addEventListener('click', ()=>{
+        console.log('button clicked');
+    }  );
+
+    function print(message){
+        console.log(message);
+    }
+
+    setTimeout(()=>{
+        console.log('hello world');
+    },3000)
+
+    //函数不加（）是传递函数本身，加了（）是调用函数
+    setTimeout(print, 3000, 'hello world1');
+
+    setTimeout(()=>{
+        console.log('hello world2');
+    },3000)
+
+    setInterval(()=>{
+        console.log('hello world3');
+    },3000)
+
+    
+
+   
+
+
+    </script>
+</body>
+</html>
